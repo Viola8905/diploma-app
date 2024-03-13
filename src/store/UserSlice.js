@@ -5,24 +5,28 @@ export const loginUser = createAsyncThunk(
   "user/loginUser",
   async (userCredentials, { rejectWithValue }) => {
     try {
-      let config = {
-        method: "get",
-        maxBodyLength: Infinity,
-        url: "https://2e67-89-171-112-35.ngrok-free.app/api/odata/ApplicationUser?$expand=Roles($select=Name,IsAdministrative),UserSkills($select=Name)",
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6Ijk3Y2M2YjA4LWY1Y2YtNGE4MC1hZjJjLTBmMGFiZWIxYmY2YiIsIlhhZlNlY3VyaXR5QXV0aFBhc3NlZCI6IlhhZlNlY3VyaXR5QXV0aFBhc3NlZCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJBZG1pbiIsIlhhZlNlY3VyaXR5IjoiWGFmU2VjdXJpdHkiLCJYYWZMb2dvblBhcmFtcyI6InExWXFMVTR0OGt2TVRWV3lVbkpNeWMzTVU5SlJLa2dzTGk3UEwwb0JDaW5WQWdBPSIsImV4cCI6MTcwODUyNjYxMX0.W7ErDt_uFMd5IMVwhFJ4w495m09Otma1gofp8v4XseU",
-          "ngrok-skip-browser-warning": "any",
+      const response = await axios.post(
+        "https://localhost:44392/login",
+        {
+          "email": "email@gmail.com",
+          "password": "string",
+          "twoFactorCode": "string",
+          "twoFactorRecoveryCode": "string"
         },
-      };
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
-      const response = await axios.request(config);
-
-      return response.data;
+      return response.data; // Assuming you want to return the response data directly
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        return rejectWithValue(error.response.data);
+      if (axios.isAxiosError(error)) {
+        // If the error is an Axios error, you can access the response directly
+        return rejectWithValue(
+          error.response ? error.response.data : "An unknown error occurred"
+        );
       } else {
+        // For non-Axios errors, you might want to handle them differently
         return rejectWithValue("An unknown error occurred");
       }
     }
@@ -40,7 +44,15 @@ const initialState = {
 const userSlice = createSlice({
   name: "user",
   initialState,
-  reducers: {},
+  reducers: {
+    logout: (state) => {
+      // Reset the state to initial state or a logged out state
+      state.loading = false;
+      state.user = null;
+      state.isAuthenticated = false;
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(loginUser.pending, (state) => {
@@ -50,15 +62,8 @@ const userSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = {
-          Oid: action.payload.Oid,
-          UserName: action.payload.UserName,
-          ProfilePicture: action.payload.ProfilePicture,
-          Roles: action.payload.Roles,
-          UserSkills: action.payload.UserSkills,
-        };
+        state.user = action.payload;
         state.isAuthenticated = true;
-        state.userRole = action.payload.Roles[0];
         state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -73,6 +78,8 @@ const userSlice = createSlice({
   },
 });
 
+// Export the logout action creator
+export const { logout } = userSlice.actions;
 export const { actions, reducer } = userSlice;
 
 export default reducer;

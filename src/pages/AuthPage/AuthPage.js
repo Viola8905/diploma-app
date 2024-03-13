@@ -25,7 +25,6 @@ const AuthPage = () => {
   const [middle_name, setMiddle_name] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = React.useState(null);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -112,16 +111,7 @@ const AuthPage = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
-                  </Form.Item>
-                  <Form.Item>
-                    <Radio.Group
-                      onChange={(e) => setRole(e.target.value)}
-                      value={role}
-                    >
-                      <Radio value="hirerer">I'm hiring</Radio>
-                      <Radio value="applicant">I'm looking for a job</Radio>
-                    </Radio.Group>
-                  </Form.Item>
+                  </Form.Item>               
                 </>
               )}
             </Form>

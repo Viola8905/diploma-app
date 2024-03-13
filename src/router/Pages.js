@@ -5,12 +5,14 @@ import StartPage from "../pages/StartPage/StartPage";
 import AuthPage from "../pages/AuthPage/AuthPage";
 import ProtectedRoute from "./ProtectedRoute";
 import { useSelector } from "react-redux";
+import { CreateEventPage } from "../pages/CreateEventPage/CreateEventPage";
+import { VisitEventQRScanner } from "../pages/VisitEventQRScanner/VisitEventQRScanner";
 
 const Pages = () => {
   const userIsAuthenticated = useSelector(
     (state) => state.user.isAuthenticated
   );
-  const userRole = useSelector((state) => state.user.userRole);
+
   return (
     <Routes>
       <Route path="/" element={<Dashboard />}>
@@ -18,8 +20,13 @@ const Pages = () => {
         <Route path="/login" element={<AuthPage />} />
         <Route path="/registration" element={<AuthPage />} />
         <Route path="/unauthorized" element={<StartPage />} />
-        <Route element={<ProtectedRoute allowedRoles={[userRole]} />}>
+        <Route element={<ProtectedRoute />}>
           <Route path="/test" element={<AuthPage />} />
+          <Route path="/create-event" element={<CreateEventPage />} />
+          <Route
+            path="/visit-event-qr-scanner"
+            element={<VisitEventQRScanner />}
+          />
         </Route>
         <Route path="*" element={<StartPage />} />
       </Route>

@@ -1,4 +1,4 @@
-import itctLogo from "../../assets/itct-logo.png";
+import itctLogo from "../../assets/qr-logo.jpeg";
 
 export const ContentData = {
   menuLinks: [
