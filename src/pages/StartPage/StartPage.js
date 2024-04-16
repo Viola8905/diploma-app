@@ -8,16 +8,19 @@ const StartPage = () => {
       <Wrapper>
         <HeroBackground>
           <Section>
-            <Flex style={{height: "150px",width:"700px"}} gap="middle" align="center" justify="center" vertical>
-              {/* <Title style={{ color: "black" }}>Find talents or</Title> */}
-              <Title>Трекінг Відвідування Івентів!</Title>
+            <Flex
+              style={{ height: "150px", width: "700px" }}
+              gap="middle"
+              align="center"
+              justify="center"
+              vertical
+            >
+              <Title>Трекінг Заходів з QR!</Title>
               <Flex gap="middle" wrap="wrap">
-                <Button type="primary"  size="large">
+                <Button type="primary" size="large">
                   Створити
                 </Button>
-                <Button  size="large">
-                  Відвідати
-                </Button>
+                <Button size="large">Відвідати</Button>
               </Flex>
             </Flex>
           </Section>

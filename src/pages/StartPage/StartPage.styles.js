@@ -29,7 +29,7 @@ export const Title = styled.div`
   color: black;
   text-align: center;
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 700;
   
    
 `;

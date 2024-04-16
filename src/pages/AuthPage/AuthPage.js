@@ -13,7 +13,7 @@ import {
   Radio,
 } from "antd";
 
-import { loginUser } from "../../store/UserSlice";
+import { loginUser, registerUser } from "../../store/UserSlice";
 
 const { Title } = Typography;
 
@@ -37,9 +37,38 @@ const AuthPage = () => {
     let userCredentials = {
       email,
       password,
+      first_name:"Vio",
+      middle_name:"Pro",
+      userId: 2,
+      user_avatar: "https://example.com/path-to-avatar.jpg"
     };
 
     dispatch(loginUser(userCredentials))
+      .unwrap()
+      .then(() => {
+        setEmail("");
+        setPassword("");
+        navigate("/");
+      })
+      .catch((error) => {
+        console.error("Failed to login:", error);
+        // Handle login failure (e.g., show an error message)
+      });
+  };
+
+  const handleRegisterEvent = (e) => {
+    e.preventDefault();
+
+    let userCredentials = {
+      email,
+      password,
+      first_name,
+      middle_name,
+      userId: 2,
+      user_avatar: "https://example.com/path-to-avatar.jpg"
+    };
+
+    dispatch(registerUser(userCredentials))
       .unwrap()
       .then(() => {
         setEmail("");
@@ -111,7 +140,7 @@ const AuthPage = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
-                  </Form.Item>               
+                  </Form.Item>
                 </>
               )}
             </Form>
@@ -139,16 +168,12 @@ const AuthPage = () => {
                     {loading ? "Loading..." : "Log In"}
                   </Button>
                 ) : (
-                  <Button type="primary" style={{ marginTop: "20px" }}>
-                    <NavLink
-                      to="/login"
-                      style={{
-                        color: "inherit",
-                        textDecoration: "none",
-                      }}
-                    >
-                      Continue
-                    </NavLink>
+                  <Button
+                    type="primary"
+                    style={{ marginTop: "20px" }}
+                    onClick={(e) => handleRegisterEvent(e)}
+                  >
+                    Continue
                   </Button>
                 )}
               </Col>

@@ -1,4 +1,6 @@
 import React from "react";
+import { useSelector } from "react-redux";
+import axios from "axios";
 import {
   Form,
   Input,
@@ -10,6 +12,7 @@ import {
   Col,
   Typography,
   QRCode,
+  Radio,
 } from "antd";
 
 const { Option } = Select;
@@ -18,9 +21,42 @@ const { Title } = Typography;
 export const CreateEventPage = () => {
   const [form] = Form.useForm();
   const [eventQrContent, setEventQrContent] = React.useState("");
+  const userData = useSelector((state) => state.user);
+
+  const createEvent = async (eventData) => {
+    const apiUrl = "https://localhost:7271/api/Events/CreateEvent"; // Replace with your actual API URL
+
+    // Construct the POST request body according to your API specification
+    const requestBody = {
+      title: eventData.eventTitle,
+      description: eventData.eventDescription,
+      startDate: "2024-04-16T11:05:38.497Z", //eventData.eventStartDate,
+      endDate: "2024-04-16T11:05:38.497Z", // eventData.eventEndDate,
+      byVisitor:
+        eventData.scanSettings == "scannerByParticipants" ? true : false,
+      scannerByVisitor:
+        eventData.scanSettings == "qrByParticipants" ? true : false,
+      participantIds: ["string"],
+    };
+    console.log(requestBody);
+    try {
+      // Making a POST request using Axios
+      const response = await axios.post(apiUrl, requestBody, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userData.user.accessToken}`,
+        },
+      });
+
+      // Handle response here
+    } catch (error) {
+      // Handle error here
+      console.error("Error creating event: ", error.response);
+    }
+  };
 
   const onFinish = (values) => {
-    console.log("Received values from form: ", values);
+    createEvent(values);
     setEventQrContent(JSON.stringify(values));
   };
 
@@ -39,12 +75,9 @@ export const CreateEventPage = () => {
 
   return (
     <div>
-      <Row justify="center" align="middle" style={{ minHeight: "100vh" }}>
+      <Row justify="center" style={{ padding: "100px 0 0 0" }}>
         <Col xs={22} sm={20} md={16} lg={12} xl={10}>
-          <Title
-            level={2}
-            style={{ textAlign: "center", padding: "100px 0 0 0" }}
-          >
+          <Title level={2} style={{ textAlign: "center", padding: "0 0 0 0" }}>
             Create Event Page
           </Title>
           <Form form={form} layout="vertical" onFinish={onFinish}>
@@ -97,13 +130,7 @@ export const CreateEventPage = () => {
               <DatePicker showTime use12Hours format="YYYY-MM-DD HH:mm" />
             </Form.Item>
 
-            <Form.Item
-              name="participants"
-              label="Participants"
-              rules={[
-                { required: true, message: "Please select participants!" },
-              ]}
-            >
+            <Form.Item name="participants" label="Participants">
               <Select
                 mode="multiple"
                 placeholder="Select participants"
@@ -113,10 +140,36 @@ export const CreateEventPage = () => {
                 }
               >
                 {/* Dynamically add <Option> components here based on your data */}
-                <Option value="participant1">Participant 1</Option>
+                <Option
+                  value={JSON.stringify({
+                    first_name: userData?.first_name,
+                    middle_name: userData?.middle_name,
+                    user_avatar: userData?.user_avatar,
+                    userId: userData?.userId,
+                    email: userData?.email,
+                    joinedEvent: false,
+                  })}
+                >
+                  Participant 1
+                </Option>
                 <Option value="participant2">Participant 2</Option>
                 {/* Add more options here */}
               </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="scanSettings"
+              label="QR Scan Settings"
+              rules={[
+                { required: true, message: "Please select QR Settings!" },
+              ]}
+            >
+              <Radio.Group>
+                <Radio value="scannerByParticipants">
+                  Scanner on Participants side
+                </Radio>
+                <Radio value="qrByParticipants">QR on Participants side</Radio>
+              </Radio.Group>
             </Form.Item>
 
             <Form.Item>

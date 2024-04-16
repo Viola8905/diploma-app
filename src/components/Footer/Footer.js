@@ -8,7 +8,7 @@ const Footer = () => {
         <Row>
           <Col className="text-center py-3">
             <span className="text-white">
-              © 2024 IT Practise. All rights reserved.
+              © 2024 Розробка системи трекінгу відвідувань заходів із застосуванням QR кодів. All rights reserved.
             </span>
           </Col>
         </Row>

@@ -7,6 +7,7 @@ import { Button } from "antd";
 import { useSelector } from "react-redux";
 import { logout } from "../../store/UserSlice";
 import { useDispatch } from "react-redux";
+import { UserOutlined } from "@ant-design/icons";
 
 const NavBar = () => {
   const { logo } = ContentData;
@@ -14,6 +15,8 @@ const NavBar = () => {
   const userIsAuthenticated = useSelector(
     (state) => state.user.isAuthenticated
   );
+
+  const user = useSelector((state) => state.user.user);
 
   const dispatch = useDispatch();
 
@@ -43,21 +46,13 @@ const NavBar = () => {
             </Nav.Link>
             {userIsAuthenticated ? (
               <>
-                <Nav.Link href="/create-event" className="justify-content-end">
-                  Create Event
+                <Nav.Link href="/create-event">Create Event</Nav.Link>
+                <Nav.Link href="/created-events">Created Events</Nav.Link>
+                <Nav.Link href="/events-to-visit">Events To Visit</Nav.Link>
+                <Nav.Link href="/user-data">
+                  <UserOutlined /> {user?.first_name} {user?.middle_name}
                 </Nav.Link>
-                <Nav.Link
-                  href="/visit-event-qr-scanner"
-                  className="justify-content-end"
-                >
-                  Visit Event
-                </Nav.Link>
-                <Button
-                  primary
-                  size="large"
-                  className="justify-content-end"
-                  onClick={handleLogout}
-                >
+                <Button primary size="large" onClick={handleLogout}>
                   Log Out
                 </Button>
               </>
