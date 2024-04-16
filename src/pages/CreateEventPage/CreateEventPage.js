@@ -38,26 +38,26 @@ export const CreateEventPage = () => {
         eventData.scanSettings == "qrByParticipants" ? true : false,
       participantIds: ["string"],
     };
-    console.log(requestBody);
+    
     try {
       // Making a POST request using Axios
       const response = await axios.post(apiUrl, requestBody, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${userData.user.accessToken}`,
+          Authorization: `Bearer ${userData.user.data.accessToken}`,
         },
       });
 
+      return response.data.id;
       // Handle response here
     } catch (error) {
       // Handle error here
-      console.error("Error creating event: ", error.response);
+      alert("Error creating event: ", error.response);
     }
   };
 
   const onFinish = (values) => {
-    createEvent(values);
-    setEventQrContent(JSON.stringify(values));
+    setEventQrContent(JSON.stringify(createEvent(values)));
   };
 
   const downloadQRCode = () => {
