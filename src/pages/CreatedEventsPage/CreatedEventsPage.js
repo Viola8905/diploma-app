@@ -1,8 +1,10 @@
 import React from "react";
 import { Row, Col, Card, Button, Typography, Tabs } from "antd";
 import moment from "moment";
-import { eventsMock } from "../../Data";
+import axios from "axios";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 const { Title } = Typography;
 const { TabPane } = Tabs;
 
@@ -29,7 +31,44 @@ const categorizeEvents = (events) => {
 };
 
 export const CreatedEventsPage = () => {
-  const { upcoming, inProgress, finished } = categorizeEvents(eventsMock);
+  const userData = useSelector((state) => state.user);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const GetCreatedEvents = async (eventData) => {
+    const apiUrl = "https://localhost:7271/api/Events/GetCreatedEvents";
+    try {
+      // Making a POST request using Axios
+      const response = await axios.get(apiUrl, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userData.user.data.accessToken}`,
+        },
+      });
+
+      setEvents(response.data); // Assuming the API returns an array of events
+      setLoading(false);
+      // Handle response here
+    } catch (error) {
+      setError(error);
+      setLoading(false);
+      alert(
+        `Error fetching events: ${
+          error.response ? error.response.data : "Server error"
+        }`
+      );
+    }
+  };
+
+  React.useEffect(() => {
+    GetCreatedEvents();
+  }, []);
+
+  const { upcoming, inProgress, finished } = categorizeEvents(events);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   const renderGroup = (group, title) => (
     <>
@@ -45,10 +84,10 @@ export const CreatedEventsPage = () => {
               >
                 <p>Start Date: {item.startDate}</p>
                 <p>End Date: {item.endDate}</p>
-                <p>Creator: {item.creator.firstName}</p>
+                <p>Creator: {item.creator.email}</p>
                 <Link
                   to={
-                    item.QRByVisitor
+                    item.qrByVisitor
                       ? `/start-event-by-scanner/${item.id}`
                       : `/start-event-by-qrcode/${item.id}`
                   }

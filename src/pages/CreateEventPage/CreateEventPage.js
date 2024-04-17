@@ -30,15 +30,14 @@ export const CreateEventPage = () => {
     const requestBody = {
       title: eventData.eventTitle,
       description: eventData.eventDescription,
-      startDate: "2024-04-16T11:05:38.497Z", //eventData.eventStartDate,
-      endDate: "2024-04-16T11:05:38.497Z", // eventData.eventEndDate,
-      byVisitor:
-        eventData.scanSettings == "scannerByParticipants" ? true : false,
+      startDate: eventData.eventStartDate,
+      endDate: eventData.eventEndDate,
+      qrByVisitor: eventData.scanSettings == "qrByParticipants" ? true : false,
       scannerByVisitor:
-        eventData.scanSettings == "qrByParticipants" ? true : false,
+        eventData.scanSettings == "scannerByParticipants" ? true : false,
       participantIds: ["string"],
     };
-    
+
     try {
       // Making a POST request using Axios
       const response = await axios.post(apiUrl, requestBody, {

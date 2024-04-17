@@ -1,20 +1,40 @@
 import React from "react";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Card, Avatar, Typography, Row, Col, QRCode, Button } from "antd";
-import { userMock, eventMock } from "../../Data";
-const { Text, Title } = Typography;
+import { Card, Row, Col, QRCode, Button } from "antd";
+import axios from "axios";
 
 // Assuming you have a user object with these properties
 
 const OpenEventForVisitorsByQRCode = () => {
-  const userData = useSelector((state) => state.user.user);
-  const user = {
-    first_name: userData.first_name,
-    middle_name: userData.middle_name,
-    user_avatar: userData.user_avatar, // Placeholder avatar URL
-    userId: userData.userId,
-    email: userData.email,
+  const [event, setEvent] = useState({});
+  const userData = useSelector((state) => state.user);
+  let { id } = useParams();
+
+  const GetEventById = async (eventId) => {
+    const apiUrl = `https://localhost:7271/api/Events/GetEventById/${eventId}`; // Replace with your actual API URL
+
+    try {
+      // Making a POST request using Axios
+      const response = await axios.get(apiUrl, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userData.user.data.accessToken}`,
+        },
+      });
+
+      setEvent(response.data);
+      // Handle response here
+    } catch (error) {
+      // Handle error here
+      alert("Error creating event: ", error.response);
+    }
   };
+
+  React.useEffect(() => {
+    GetEventById(id);
+  }, []);
 
   const downloadQRCode = () => {
     const canvas = document.getElementById("myqrcode")?.querySelector("canvas");
@@ -44,14 +64,14 @@ const OpenEventForVisitorsByQRCode = () => {
             }}
           >
             <h1>Scan This QR Code to Visit this Event</h1>
-            <h2>{eventMock.title}</h2>
-            <p>Start Date: {eventMock.startDate}</p>
-            <p>End Date: {eventMock.endDate}</p>
-            <p>Creator: {eventMock.creator.firstName}</p>
-            <p>Description: {eventMock.description}</p>
+            <h2>{event.title}</h2>
+            <p>Start Date: {event.startDate}</p>
+            <p>End Date: {event.endDate}</p>
+             <p>Creator: {event.creator?.email}</p> 
+            <p>Description: {event.description}</p>
             <div>
               <QRCode
-                value={JSON.stringify(eventMock.id)}
+                value={JSON.stringify(event.id)}
                 bgColor="#fff"
                 style={{
                   margin: "20px  auto",

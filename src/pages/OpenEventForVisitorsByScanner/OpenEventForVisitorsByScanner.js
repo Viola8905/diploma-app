@@ -1,11 +1,40 @@
 import React from "react";
 import { QrReader } from "react-qr-reader";
+import { useState } from "react";
 import { Card, Row, Col } from "antd";
-import { userMock, eventMock } from "../../Data";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export const OpenEventForVisitorsByScanner = () => {
   const [data, setData] = React.useState("No result");
-  const [eventData, setEventData] = React.useState(eventMock);
+  const [event, setEvent] = useState({});
+  let { id } = useParams();
+  const userData = useSelector((state) => state.user);
+
+  const GetEventById = async (eventId) => {
+    const apiUrl = `https://localhost:7271/api/Events/GetEventById/${eventId}`; // Replace with your actual API URL
+
+    try {
+      // Making a POST request using Axios
+      const response = await axios.get(apiUrl, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userData.user.data.accessToken}`,
+        },
+      });
+
+      setEvent(response.data);
+      // Handle response here
+    } catch (error) {
+      // Handle error here
+      alert("Error creating event: ", error.response);
+    }
+  };
+
+  React.useEffect(() => {
+    GetEventById(id);
+  }, []);
 
   return (
     <Row justify="center" style={{ padding: " 100px 10px 20px 10px" }}>
@@ -22,11 +51,11 @@ export const OpenEventForVisitorsByScanner = () => {
             }}
           >
             <h1>Scan Your Personal QR code to Visit this Event</h1>
-            <h2>{eventMock.title}</h2>
-            <p>Start Date: {eventMock.startDate}</p>
-            <p>End Date: {eventMock.endDate}</p>
-            <p>Creator: {eventMock.creator.firstName}</p>
-            <p>Description: {eventMock.description}</p>
+            <h2>{event.title}</h2>
+            <p>Start Date: {event.startDate}</p>
+            <p>End Date: {event.endDate}</p>
+            <p>Creator: {event.creator?.email}</p> 
+            <p>Description: {event.description}</p>
           </div>
           <div style={{}}>
             <QrReader
