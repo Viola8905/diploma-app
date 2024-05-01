@@ -1,14 +1,44 @@
 import React from "react";
 import { Card, List, Avatar, Typography, Timeline, Tabs, Row, Col } from "antd";
 import { UserOutlined, CalendarOutlined } from "@ant-design/icons";
-import { userMock, eventMock } from "../../Data";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { convertUtcToLocal } from '../../utils/ConvertUtcToLocal';
+
 const { Title, Paragraph, Text } = Typography;
 const { TabPane } = Tabs;
 
 const EventDetails = () => {
-  const event = eventMock;
-  const freeVisitorsCount = event.FreeVisitors.Count > 0;
-  const renderParticipantList = (participants) => (
+  const [event, setEvent] = React.useState({});
+  const userData = useSelector((state) => state.user);
+  let { id, isVisitor } = useParams();
+
+  const GetEventById = async (eventId) => {
+    const apiUrl = `https://localhost:7271/api/Events/GetEventById/${eventId}`; // Replace with your actual API URL
+
+    try {
+      // Making a POST request using Axios
+      const response = await axios.get(apiUrl, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userData.user.accessToken}`,
+        },
+      });
+
+      setEvent(response.data);
+      // Handle response here
+    } catch (error) {
+      // Handle error here
+      alert("Error creating event: ", error.response);
+    }
+  };
+
+  React.useEffect(() => {
+    GetEventById(id);
+  }, []);
+
+  const renderParticipantList = (participants, descrText) => (
     <List
       itemLayout="horizontal"
       dataSource={participants}
@@ -16,7 +46,7 @@ const EventDetails = () => {
         <List.Item>
           <List.Item.Meta
             avatar={<Avatar icon={<UserOutlined />} />}
-            title={`${participant.user.firstName} ${participant.user.lastName}`}
+            title={`${participant.user.email}`}
             description={`Joined: ${new Date(
               participant.joinedTime
             ).toLocaleString()}`}
@@ -34,59 +64,61 @@ const EventDetails = () => {
           <Timeline>
             <Timeline.Item>
               <Text strong>Start Date: </Text>
-              {new Date(event.startDate).toLocaleString()}
+              {convertUtcToLocal(event.startDate)}
             </Timeline.Item>
             <Timeline.Item>
               <Text strong>End Date: </Text>
-              {new Date(event.endDate).toLocaleString()}
+              {convertUtcToLocal(event.endDate)}
             </Timeline.Item>
           </Timeline>
-          <Title level={4}>Creator</Title>
+          <Title level={4}>Власник</Title>
           <List.Item>
             <List.Item.Meta
               avatar={<Avatar icon={<UserOutlined />} />}
-              title={`${event.creator.firstName} ${event.creator.lastName}`}
-              description={event.creator.email}
+              // title={`${event?.creator?.firstName} ${event?.creator?.lastName}`}
+              title={event?.creator?.email}
             />
           </List.Item>
         </Card>
-
-        {/* Participants Tabbed Group */}
-        <Card bordered={false} style={{ marginTop: "20px" }}>
-          <Title level={4}>Invited Participants</Title>
-          <Tabs defaultActiveKey="1">
-            <TabPane tab="Joined" key="1">
-              {renderParticipantList(
-                event.ParticipantsToVisit.filter((p) => p.joined)
-              )}
-            </TabPane>
-            <TabPane tab="Skipped" key="2">
-              {renderParticipantList(
-                event.ParticipantsToVisit.filter((p) => !p.joined)
-              )}
-            </TabPane>
-          </Tabs>
-        </Card>
-
-        {/* {freeVisitorsCount ?  ( */}
-        <Card bordered={false} style={{ marginTop: "20px" }}>
-          <Title level={4}>Free Visitors</Title>
-          <List
-            itemLayout="horizontal"
-            dataSource={event.FreeVisitors}
-            renderItem={(visitor) => (
-              <List.Item>
-                <List.Item.Meta
-                  avatar={<Avatar icon={<UserOutlined />} />}
-                  title={`${visitor.user.firstName} ${visitor.user.lastName}`}
-                  description={`Joined: ${new Date(
-                    visitor.joinedTime
-                  ).toLocaleString()}`}
-                />
-              </List.Item>
-            )}
-          />
-        </Card>
+        {!isVisitor && (
+          <>
+            <Card bordered={false} style={{ marginTop: "20px" }}>
+              <Title level={4}>Запрошені учасники</Title>
+              <Tabs defaultActiveKey="1">
+                <TabPane tab="Приєдналися" key="1">
+                  {renderParticipantList(
+                    event?.eventParticipants?.filter((p) => p.joined),
+                    "Час приєднання:"
+                  )}
+                </TabPane>
+                <TabPane tab="Пропустили" key="2">
+                  {renderParticipantList(
+                    event?.eventParticipants?.filter((p) => !p.joined),
+                    "Дані відсутні:"
+                  )}
+                </TabPane>
+              </Tabs>
+            </Card>
+            {/* <Card bordered={false} style={{ marginTop: "20px" }}>
+              <Title level={4}>Довільні учасники</Title>
+              <List
+                itemLayout="horizontal"
+                dataSource={event.FreeVisitors}
+                renderItem={(visitor) => (
+                  <List.Item>
+                    <List.Item.Meta
+                      avatar={<Avatar icon={<UserOutlined />} />}
+                      title={`${visitor.user.firstName} ${visitor.user.lastName}`}
+                      description={`Joined: ${new Date(
+                        visitor.joinedTime
+                      ).toLocaleString()}`}
+                    />
+                  </List.Item>
+                )}
+              />
+            </Card> */}
+          </>
+        )}
       </Col>
     </Row>
   );

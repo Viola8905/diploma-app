@@ -37,10 +37,10 @@ const AuthPage = () => {
     let userCredentials = {
       email,
       password,
-      first_name:"Vio",
-      middle_name:"Pro",
+      first_name: "Vio",
+      middle_name: "Pro",
       userId: 2,
-      user_avatar: "https://example.com/path-to-avatar.jpg"
+      user_avatar: "https://example.com/path-to-avatar.jpg",
     };
 
     dispatch(loginUser(userCredentials))
@@ -65,7 +65,7 @@ const AuthPage = () => {
       first_name,
       middle_name,
       userId: 2,
-      user_avatar: "https://example.com/path-to-avatar.jpg"
+      user_avatar: "https://example.com/path-to-avatar.jpg",
     };
 
     dispatch(registerUser(userCredentials))
@@ -89,72 +89,37 @@ const AuthPage = () => {
           {/* Adjust width as needed */}
           <Card>
             <Title level={2} style={{ textAlign: "center" }}>
-              {isLogin ? "Log In" : "Sign Up"}
+              {isLogin ? "Логін" : "Реєстрація"}
             </Title>
             <Form layout="vertical">
-              {isLogin ? (
-                <>
-                  <Form.Item label="Email">
-                    <Input
-                      placeholder="Email"
-                      value={email}
-                      type="email"
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </Form.Item>
-                  <Form.Item label="Password">
-                    <Input.Password
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                  </Form.Item>
-                </>
-              ) : (
-                <>
-                  <Form.Item label="Name">
-                    <Input
-                      placeholder="Name"
-                      value={first_name}
-                      onChange={(e) => setFirst_name(e.target.value)}
-                    />
-                  </Form.Item>
-                  <Form.Item label="Surname">
-                    <Input
-                      placeholder="Surname"
-                      value={middle_name}
-                      onChange={(e) => setMiddle_name(e.target.value)}
-                    />
-                  </Form.Item>
-                  <Form.Item label="Email">
-                    <Input
-                      placeholder="Email"
-                      value={email}
-                      type="email"
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </Form.Item>
-                  <Form.Item label="Password">
-                    <Input.Password
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                  </Form.Item>
-                </>
-              )}
+              <>
+                <Form.Item label="Email">
+                  <Input
+                    placeholder="Email"
+                    value={email}
+                    type="email"
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </Form.Item>
+                <Form.Item label="Password">
+                  <Input.Password
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </Form.Item>
+              </>
             </Form>
 
             <Row justify="space-between">
               {isLogin ? (
                 <Col>
-                  Don't have an account?
-                  <NavLink to="/registration"> Create one!</NavLink>
+                  Не маєте акаунту?
+                  <NavLink to="/registration"> Створіть!</NavLink>
                 </Col>
               ) : (
                 <Col>
-                  Already have an account?
-                  <NavLink to="/login"> Log In!</NavLink>
+                  Вже маєте акаунт ?<NavLink to="/login"> Залогуйтеся!</NavLink>
                 </Col>
               )}
 
@@ -165,7 +130,7 @@ const AuthPage = () => {
                     style={{ marginTop: "20px" }}
                     onClick={(e) => handleLoginEvent(e)}
                   >
-                    {loading ? "Loading..." : "Log In"}
+                    {loading ? "Loading..." : "Ввійти"}
                   </Button>
                 ) : (
                   <Button
@@ -173,7 +138,7 @@ const AuthPage = () => {
                     style={{ marginTop: "20px" }}
                     onClick={(e) => handleRegisterEvent(e)}
                   >
-                    Continue
+                    {loading ? "Loading..." : "Створити"}
                   </Button>
                 )}
               </Col>

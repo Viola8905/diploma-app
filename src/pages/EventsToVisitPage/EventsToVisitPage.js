@@ -1,8 +1,11 @@
 import React from "react";
 import { Row, Col, Card, Button, Typography, Tabs } from "antd";
-import { eventsMock } from "../../Data";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useState } from "react";
+import axios from "axios";
 import moment from "moment";
+import { convertUtcToLocal } from "../../utils/ConvertUtcToLocal";
 const { Title } = Typography;
 const { TabPane } = Tabs;
 
@@ -13,8 +16,8 @@ const categorizeEvents = (events) => {
   const now = moment();
 
   events.forEach((event) => {
-    const start = moment(event.startDate);
-    const end = moment(event.endDate);
+    const start = convertUtcToLocal(event.startDate);
+    const end = convertUtcToLocal(event.endDate);
 
     if (now.isBefore(start)) {
       upcoming.push(event);
@@ -29,7 +32,43 @@ const categorizeEvents = (events) => {
 };
 
 export const EventsToVisitPage = () => {
-  const { upcoming, inProgress, finished } = categorizeEvents(eventsMock);
+  const userData = useSelector((state) => state.user);
+  const [events, setEvents] = React.useState([]);
+  const { upcoming, inProgress, finished } = categorizeEvents(events);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const GetParticipatedEvents = async () => {
+    const apiUrl = "https://localhost:7271/api/Events/GetParticipatedEvents";
+    try {
+      // Making a POST request using Axios
+      const response = await axios.get(apiUrl, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userData.user.accessToken}`,
+        },
+      });
+
+      setEvents(response.data); // Assuming the API returns an array of events
+      setLoading(false);
+      // Handle response here
+    } catch (error) {
+      setError(error);
+      setLoading(false);
+      alert(
+        `Error fetching events: ${
+          error.response ? error.response.data : "Server error"
+        }`
+      );
+    }
+  };
+
+  React.useEffect(() => {
+    GetParticipatedEvents();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   const renderGroup = (group, title) => (
     <>
@@ -43,12 +82,12 @@ export const EventsToVisitPage = () => {
                 bordered={false}
                 style={{ boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2)" }}
               >
-                <p>Start Date: {item.startDate}</p>
-                <p>End Date: {item.endDate}</p>
-                <p>Creator: {item.creator.firstName}</p>
+                <p>Start Date: {convertUtcToLocal(item.startDate)}</p>
+                <p>End Date: {convertUtcToLocal(item.endDate)}</p>
+                <p>Creator: {item.creator.email}</p>
                 <Link
                   to={
-                    item.QRByVisitor
+                    item.qrByVisitor
                       ? `/user-data`
                       : `/visit-event-scanner/${item.id}`
                   }
@@ -58,16 +97,12 @@ export const EventsToVisitPage = () => {
                     style={{ margin: "20px 5px 0 0" }}
                     onClick={(e) => e}
                   >
-                    Visit Event
+                    Відвідати
                   </Button>
                 </Link>
-                <Link to={`/event-details/${item.id}`}>
-                  <Button
-                    type="primary"
-                    style={{ marginTop: "20px" }}
-                    onClick={(e) => e}
-                  >
-                    Event Details
+                <Link to={`/event-details/${item.id}/true`}>
+                  <Button style={{ marginTop: "20px" }} onClick={(e) => e}>
+                    Деталі
                   </Button>
                 </Link>
               </Card>
@@ -81,16 +116,16 @@ export const EventsToVisitPage = () => {
   return (
     <div style={{ margin: "100px 50px 0 50px" }}>
       <Title level={2} style={{ textAlign: "center", padding: "0 0 0 20px" }}>
-        Events To Visit Page
+        Запрошення на Заходи
       </Title>
       <Tabs defaultActiveKey="1" className="event-tabs">
-        <TabPane tab="Upcoming" key="1">
+        <TabPane tab="Майбутні" key="1">
           {renderGroup(upcoming)}
         </TabPane>
-        <TabPane tab="In Progress" key="2">
+        <TabPane tab="В Прогресі" key="2">
           {renderGroup(inProgress)}
         </TabPane>
-        <TabPane tab="Finished" key="3">
+        <TabPane tab="Завершені" key="3">
           {renderGroup(finished)}
         </TabPane>
       </Tabs>

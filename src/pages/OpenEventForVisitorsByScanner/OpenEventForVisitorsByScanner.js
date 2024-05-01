@@ -1,10 +1,11 @@
 import React from "react";
 import { QrReader } from "react-qr-reader";
 import { useState } from "react";
-import { Card, Row, Col } from "antd";
+import { Card, Row, Col, message } from "antd";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { convertUtcToLocal } from '../../utils/ConvertUtcToLocal';
 
 export const OpenEventForVisitorsByScanner = () => {
   const [data, setData] = React.useState("No result");
@@ -20,7 +21,7 @@ export const OpenEventForVisitorsByScanner = () => {
       const response = await axios.get(apiUrl, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${userData.user.data.accessToken}`,
+          Authorization: `Bearer ${userData.user.accessToken}`,
         },
       });
 
@@ -29,6 +30,32 @@ export const OpenEventForVisitorsByScanner = () => {
     } catch (error) {
       // Handle error here
       alert("Error creating event: ", error.response);
+    }
+  };
+
+  const UpdateEventParticipant = async (eventId, userId) => {
+    const apiUrl = `https://localhost:7271/api/Events/UpdateEventParticipant/${eventId}/${userId}`; // Replace with your actual API URL
+
+    try {
+      // Making a POST request using Axios
+      const response = await axios.post(
+        apiUrl,
+        {},
+        {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userData.user.accessToken}`,
+          },
+        }
+      );
+
+      message.success("Ви успішно приєдналися до Заходу");
+      // Handle response here
+    } catch (error) {
+      // Handle error here
+      message.error("Щось пішло не так, ви не змогли приєднатися");
+      console.log("Error creating event: ", error.response);
     }
   };
 
@@ -50,23 +77,24 @@ export const OpenEventForVisitorsByScanner = () => {
               alignItems: "center",
             }}
           >
-            <h1>Scan Your Personal QR code to Visit this Event</h1>
+            <h1>Відскануйте свій персональний QR код, щоб відвідати:</h1>
             <h2>{event.title}</h2>
-            <p>Start Date: {event.startDate}</p>
-            <p>End Date: {event.endDate}</p>
-            <p>Creator: {event.creator?.email}</p> 
+            <p>Start Date: {convertUtcToLocal(event.startDate)}</p>
+            <p>End Date: {convertUtcToLocal(event.endDate)}</p>
+            <p>Creator: {event.creator?.email}</p>
             <p>Description: {event.description}</p>
           </div>
           <div style={{}}>
             <QrReader
               onResult={(result, error) => {
                 if (!!result) {
+                  UpdateEventParticipant(id, (result?.text).replace(/"/g, ""));
+
                   setData(result?.text);
                 }
-
-                if (!!error) {
-                  console.info(error);
-                }
+                // if (!!error) {
+                //   console.info(error);
+                // }
               }}
               style={{ width: "100%" }}
             />

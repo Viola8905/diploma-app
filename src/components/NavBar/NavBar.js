@@ -40,25 +40,27 @@ const NavBar = () => {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link href="/">Home</Nav.Link>
+            <Nav.Link href="/">Головна</Nav.Link>
             <Nav.Link href="/" className="justify-content-end">
-              About Us
+              Про Нас
             </Nav.Link>
             {userIsAuthenticated ? (
               <>
-                <Nav.Link href="/create-event">Create Event</Nav.Link>
-                <Nav.Link href="/created-events">Created Events</Nav.Link>
-                <Nav.Link href="/events-to-visit">Events To Visit</Nav.Link>
-                <Nav.Link href="/user-data">
-                  <UserOutlined /> {user?.first_name} {user?.middle_name}
+                <Nav.Link href="/create-event">Створити Захід</Nav.Link>
+                <Nav.Link href="/created-events">Створені Заходи</Nav.Link>
+                <Nav.Link href="/events-to-visit">
+                  Запрошення на Заходи
                 </Nav.Link>
                 <Button primary size="large" onClick={handleLogout}>
-                  Log Out
+                  Вийти
                 </Button>
+                <Nav.Link href="/user-data" style={{ color: "#1890ff" }}>
+                  | <UserOutlined /> {user?.email}
+                </Nav.Link>
               </>
             ) : (
               <Button primary size="large" href="/login">
-                Sign In
+                Ввійти
               </Button>
             )}
           </Nav>

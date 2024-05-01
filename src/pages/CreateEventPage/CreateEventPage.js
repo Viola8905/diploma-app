@@ -5,14 +5,14 @@ import {
   Form,
   Input,
   DatePicker,
-  TimePicker,
   Select,
   Button,
   Row,
   Col,
   Typography,
-  QRCode,
   Radio,
+  Card,
+  message,
 } from "antd";
 
 const { Option } = Select;
@@ -20,22 +20,23 @@ const { Title } = Typography;
 
 export const CreateEventPage = () => {
   const [form] = Form.useForm();
-  const [eventQrContent, setEventQrContent] = React.useState("");
   const userData = useSelector((state) => state.user);
+  const [allUsers, setAllUsers] = React.useState([]);
 
   const createEvent = async (eventData) => {
     const apiUrl = "https://localhost:7271/api/Events/CreateEvent"; // Replace with your actual API URL
 
+    
     // Construct the POST request body according to your API specification
     const requestBody = {
       title: eventData.eventTitle,
       description: eventData.eventDescription,
-      startDate: eventData.eventStartDate,
-      endDate: eventData.eventEndDate,
+      startDate:  new Date(eventData.eventStartDate),
+      endDate: new Date(eventData.eventEndDate),
       qrByVisitor: eventData.scanSettings == "qrByParticipants" ? true : false,
       scannerByVisitor:
         eventData.scanSettings == "scannerByParticipants" ? true : false,
-      participantIds: ["string"],
+      participantIds: eventData.participants,
     };
 
     try {
@@ -43,7 +44,7 @@ export const CreateEventPage = () => {
       const response = await axios.post(apiUrl, requestBody, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${userData.user.data.accessToken}`,
+          Authorization: `Bearer ${userData.user.accessToken}`,
         },
       });
 
@@ -55,147 +56,153 @@ export const CreateEventPage = () => {
     }
   };
 
-  const onFinish = (values) => {
-    setEventQrContent(JSON.stringify(createEvent(values)));
+  const getAllUsers = async () => {
+    const apiUrl = "https://localhost:7271/api/Users/GetAllUsers"; // Replace with your actual API URL
+
+    // Construct the POST request body according to your API specification
+
+    try {
+      // Making a POST request using Axios
+      const response = await axios.get(apiUrl, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userData.user.accessToken}`,
+        },
+      });
+
+      setAllUsers(response.data);
+      // Handle response here
+    } catch (error) {
+      // Handle error here
+      alert("Error creating event: ", error.response);
+    }
   };
 
-  const downloadQRCode = () => {
-    const canvas = document.getElementById("myqrcode")?.querySelector("canvas");
-    if (canvas) {
-      const url = canvas.toDataURL();
-      const a = document.createElement("a");
-      a.download = "QRCode.png";
-      a.href = url;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
+  React.useEffect(() => {
+    getAllUsers();
+  }, []);
+
+  const onFinish = (values) => {
+    createEvent(values);
+    message.success("Захід успішно створено!");
+  };
+
+  const onFinishFailed = (errorInfo) => {
+    message.error("Захід не створився, перевірте поля!");
   };
 
   return (
     <div>
-      <Row justify="center" style={{ padding: "100px 0 0 0" }}>
+      <Row justify="center" style={{ padding: "100px 0 20px 0" }}>
         <Col xs={22} sm={20} md={16} lg={12} xl={10}>
-          <Title level={2} style={{ textAlign: "center", padding: "0 0 0 0" }}>
-            Create Event Page
-          </Title>
-          <Form form={form} layout="vertical" onFinish={onFinish}>
-            <Form.Item
-              name="eventTitle"
-              label="Event Title"
-              rules={[
-                { required: true, message: "Please input the event Title!" },
-              ]}
+          <Card
+            bordered={false}
+            style={{ boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2)" }}
+          >
+            <Title
+              level={2}
+              style={{ textAlign: "center", padding: "0 0 0 0" }}
             >
-              <Input placeholder="Enter event Title" />
-            </Form.Item>
-
-            <Form.Item
-              name="eventDescription"
-              label="Event Description"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input the event description!",
-                },
-              ]}
+              Форма для створення Заходу
+            </Title>
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={onFinish}
+              onFinishFailed={onFinishFailed}
             >
-              <Input.TextArea rows={4} placeholder="Enter event description" />
-            </Form.Item>
-
-            <Form.Item
-              name="eventStartDate"
-              label="Event Start Date and Time"
-              rules={[
-                {
-                  required: true,
-                  message: "Please select the start date and time!",
-                },
-              ]}
-            >
-              <DatePicker showTime use12Hours format="YYYY-MM-DD HH:mm" />
-            </Form.Item>
-
-            <Form.Item
-              name="eventEndDate"
-              label="Event End Date and Time"
-              rules={[
-                {
-                  required: true,
-                  message: "Please select the end date and time!",
-                },
-              ]}
-            >
-              <DatePicker showTime use12Hours format="YYYY-MM-DD HH:mm" />
-            </Form.Item>
-
-            <Form.Item name="participants" label="Participants">
-              <Select
-                mode="multiple"
-                placeholder="Select participants"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
-                }
+              <Form.Item
+                name="eventTitle"
+                label="Заголовок"
+                rules={[
+                  { required: true, message: "Please input the event Title!" },
+                ]}
               >
-                {/* Dynamically add <Option> components here based on your data */}
-                <Option
-                  value={JSON.stringify({
-                    first_name: userData?.first_name,
-                    middle_name: userData?.middle_name,
-                    user_avatar: userData?.user_avatar,
-                    userId: userData?.userId,
-                    email: userData?.email,
-                    joinedEvent: false,
-                  })}
-                >
-                  Participant 1
-                </Option>
-                <Option value="participant2">Participant 2</Option>
-                {/* Add more options here */}
-              </Select>
-            </Form.Item>
+                <Input placeholder="Enter event Title" />
+              </Form.Item>
 
-            <Form.Item
-              name="scanSettings"
-              label="QR Scan Settings"
-              rules={[
-                { required: true, message: "Please select QR Settings!" },
-              ]}
-            >
-              <Radio.Group>
-                <Radio value="scannerByParticipants">
-                  Scanner on Participants side
-                </Radio>
-                <Radio value="qrByParticipants">QR on Participants side</Radio>
-              </Radio.Group>
-            </Form.Item>
-
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                Submit
-              </Button>
-            </Form.Item>
-          </Form>
-          {eventQrContent && (
-            <div id="myqrcode" style={{ padding: "20px 0 " }}>
-              <Title level={2} style={{ textAlign: "center" }}>
-                QR Code for the Event
-              </Title>
-              <div>
-                <QRCode
-                  value={eventQrContent}
-                  bgColor="#fff"
-                  style={{
-                    margin: "20px  auto",
-                  }}
+              <Form.Item
+                name="eventDescription"
+                label="Опис"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input the event description!",
+                  },
+                ]}
+              >
+                <Input.TextArea
+                  rows={4}
+                  placeholder="Enter event description"
                 />
-              </div>
-              <Button type="primary" onClick={downloadQRCode}>
-                Download
-              </Button>
-            </div>
-          )}
+              </Form.Item>
+
+              <Form.Item
+                name="eventStartDate"
+                label="Початок"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select the start date and time!",
+                  },
+                ]}
+              >
+                <DatePicker showTime use12Hours format="YYYY-MM-DD HH:mm" />
+              </Form.Item>
+
+              <Form.Item
+                name="eventEndDate"
+                label="Кінець"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select the end date and time!",
+                  },
+                ]}
+              >
+                <DatePicker showTime use12Hours format="YYYY-MM-DD HH:mm" />
+              </Form.Item>
+
+              <Form.Item name="participants" label="Учасники">
+                <Select
+                  mode="multiple"
+                  placeholder="Обрати учасників"
+                  filterOption={(input, option) =>
+                    option.children
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {allUsers.map((x) => (
+                    <Option key={x.id} value={x.id}>
+                      {x.email}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+                name="scanSettings"
+                label="QR Налаштування"
+                rules={[
+                  { required: true, message: "Please select QR Settings!" },
+                ]}
+              >
+                <Radio.Group>
+                  <Radio value="scannerByParticipants">
+                    Сканер від Відвідувача
+                  </Radio>
+                  <Radio value="qrByParticipants">QR від Відвідувача</Radio>
+                </Radio.Group>
+              </Form.Item>
+
+              <Form.Item>
+                <Button type="primary" htmlType="submit">
+                  Створити
+                </Button>
+              </Form.Item>
+            </Form>
+          </Card>
         </Col>
       </Row>
     </div>

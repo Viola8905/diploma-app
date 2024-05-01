@@ -14,11 +14,30 @@ export const loginUser = createAsyncThunk(
           twoFactorRecoveryCode: "string",
         },
         {
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
         }
       );
-      console.log(response.data)
-      return response; // Assuming you want to return the response data directly
+
+      const response2 = await axios.get(
+        "https://localhost:7271/api/Users/GetPersonalInfo",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${response.data.accessToken}`,
+          },
+        }
+      );
+
+      let userData = {
+        accessToken: response.data.accessToken,
+        ...response2.data,
+      };
+
+      return userData; // Assuming you want to return the response data directly
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // If the error is an Axios error, you can access the response directly
@@ -48,7 +67,23 @@ export const registerUser = createAsyncThunk(
         }
       );
 
-      return response; // Assuming you want to return the response data directly
+      const response2 = await axios.get(
+        "https://localhost:7271/api/Users/GetPersonalInfo",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${response.data.accessToken}`,
+          },
+        }
+      );
+
+      let userData = {
+        accessToken: response.data.accessToken,
+        ...response2.data,
+      };
+
+      return userData;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // If the error is an Axios error, you can access the response directly

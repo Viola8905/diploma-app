@@ -5,6 +5,13 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { convertUtcToLocal } from "../../utils/ConvertUtcToLocal";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
+
 const { Title } = Typography;
 const { TabPane } = Tabs;
 
@@ -15,8 +22,8 @@ const categorizeEvents = (events) => {
   const now = moment();
 
   events.forEach((event) => {
-    const start = moment(event.startDate);
-    const end = moment(event.endDate);
+    const start = convertUtcToLocal(event.startDate);
+    const end = convertUtcToLocal(event.endDate);
 
     if (now.isBefore(start)) {
       upcoming.push(event);
@@ -35,15 +42,16 @@ export const CreatedEventsPage = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { upcoming, inProgress, finished } = categorizeEvents(events);
 
-  const GetCreatedEvents = async (eventData) => {
+  const GetCreatedEvents = async () => {
     const apiUrl = "https://localhost:7271/api/Events/GetCreatedEvents";
     try {
       // Making a POST request using Axios
       const response = await axios.get(apiUrl, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${userData.user.data.accessToken}`,
+          Authorization: `Bearer ${userData.user.accessToken}`,
         },
       });
 
@@ -61,11 +69,32 @@ export const CreatedEventsPage = () => {
     }
   };
 
+  const DeleteEventById = async (eventId) => {
+    const apiUrl = `https://localhost:7271/api/Events/DeleteEvent/${eventId}`; // Replace with your actual API URL
+
+    try {
+      // Making a POST request using Axios
+      const response = await axios.delete(apiUrl, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userData.user.accessToken}`,
+        },
+      });
+
+      if (response.status === 200) {
+        GetCreatedEvents();
+      }
+
+      // Handle response here
+    } catch (error) {
+      // Handle error here
+      alert("Error creating event: ", error.response);
+    }
+  };
+
   React.useEffect(() => {
     GetCreatedEvents();
   }, []);
-
-  const { upcoming, inProgress, finished } = categorizeEvents(events);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -82,8 +111,8 @@ export const CreatedEventsPage = () => {
                 bordered={false}
                 style={{ boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2)" }}
               >
-                <p>Start Date: {item.startDate}</p>
-                <p>End Date: {item.endDate}</p>
+                <p>Start Date: {convertUtcToLocal(item.startDate)}</p>
+                <p>End Date: {convertUtcToLocal(item.endDate)}</p>
                 <p>Creator: {item.creator.email}</p>
                 <Link
                   to={
@@ -93,28 +122,41 @@ export const CreatedEventsPage = () => {
                   }
                 >
                   <Button
-                    type="primary"
-                    style={{ margin: "20px 5px 0 0" }}
+                    style={{
+                      margin: "20px 5px 0 0",
+                      // backgroundColor: "#90fc99",
+                    }}
                     onClick={(e) => e}
                   >
-                    Start Event
+                    Почати
                   </Button>
                 </Link>
-                <Link to={`/event-details/${item.id}`}>
+                <Link to={`/event-details/${item.id}/false`}>
                   <Button
                     type="primary"
                     style={{ margin: "20px  5px 0 0" }}
                     onClick={(e) => e}
                   >
-                    Event Details
+                    Деталі
                   </Button>
                 </Link>
                 <Button
                   type="primary"
-                  style={{ margin: "20px 0 0 0" }}
                   onClick={(e) => e}
+                  style={{
+                    margin: "20px  5px 0 0",
+                    backgroundColor: "orange",
+                  }}
                 >
-                  Edit Event
+                  <EditOutlined style={{ fontSize: "22px" }} />
+                </Button>
+                <Button
+                  danger
+                  type="primary"
+                  style={{ margin: "20px 0 0 0" }}
+                  onClick={(e) => DeleteEventById(item.id)}
+                >
+                  <DeleteOutlined style={{ fontSize: "22px" }} />
                 </Button>
               </Card>
             </Col>
@@ -127,16 +169,16 @@ export const CreatedEventsPage = () => {
   return (
     <div style={{ margin: "100px 50px 0 50px" }}>
       <Title level={2} style={{ textAlign: "center", padding: "0 0 0 20px" }}>
-        Created Events Page
+        Створені Заходи
       </Title>
       <Tabs defaultActiveKey="1" className="event-tabs">
-        <TabPane tab="Upcoming" key="1">
+        <TabPane tab="Майбутні" key="1">
           {renderGroup(upcoming)}
         </TabPane>
-        <TabPane tab="In Progress" key="2">
+        <TabPane tab="В Прогресі" key="2">
           {renderGroup(inProgress)}
         </TabPane>
-        <TabPane tab="Finished" key="3">
+        <TabPane tab="Завершені" key="3">
           {renderGroup(finished)}
         </TabPane>
       </Tabs>

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Card, Row, Col, QRCode, Button } from "antd";
+import { convertUtcToLocal } from '../../utils/ConvertUtcToLocal';
 import axios from "axios";
 
 // Assuming you have a user object with these properties
@@ -20,7 +21,7 @@ const OpenEventForVisitorsByQRCode = () => {
       const response = await axios.get(apiUrl, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${userData.user.data.accessToken}`,
+          Authorization: `Bearer ${userData.user.accessToken}`,
         },
       });
 
@@ -49,7 +50,7 @@ const OpenEventForVisitorsByQRCode = () => {
     }
   };
   return (
-    <Row justify="center" style={{ padding: " 100px 10px 0 10px" }}>
+    <Row justify="center" style={{ padding: " 100px 10px 20px 10px" }}>
       <Col xs={24} sm={12} md={8} lg={6}>
         <Card
           bordered={false}
@@ -63,11 +64,11 @@ const OpenEventForVisitorsByQRCode = () => {
               marginBottom: 16,
             }}
           >
-            <h1>Scan This QR Code to Visit this Event</h1>
+            <h1>Відскануйте QR в своїй аплікації, щоб відвідати:</h1>
             <h2>{event.title}</h2>
-            <p>Start Date: {event.startDate}</p>
-            <p>End Date: {event.endDate}</p>
-             <p>Creator: {event.creator?.email}</p> 
+            <p>Start Date: {convertUtcToLocal(event.startDate)}</p>
+            <p>End Date: {convertUtcToLocal(event.endDate)}</p>
+            <p>Creator: {event.creator?.email}</p>
             <p>Description: {event.description}</p>
             <div>
               <QRCode
@@ -79,7 +80,7 @@ const OpenEventForVisitorsByQRCode = () => {
               />
             </div>
             <Button type="primary" onClick={downloadQRCode}>
-              Download
+              Завантажити QR
             </Button>
           </div>
         </Card>

@@ -39,7 +39,7 @@ const Pages = () => {
           <Route exact path="/visit-event-scanner/:id" element={<VisitEventQRScannerPage />} />
           <Route exact path="/start-event-by-scanner/:id" element={<OpenEventForVisitorsByScanner />} />
           <Route exact path="/start-event-by-qrcode/:id" element={<OpenEventForVisitorsByQRCode />} />
-          <Route exact path="/event-details/:id" element={<EventDetails/>} />
+          <Route exact path="/event-details/:id/:isVisior" element={<EventDetails/>} />
         </Route>
         <Route path="*" element={<StartPage />} />
       </Route>
